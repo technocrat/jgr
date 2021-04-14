@@ -1,0 +1,10 @@
+suppressPackageStartupMessages({
+  library(DBI)
+  library(dbplyr)
+  library(dplyr)
+  library(here)
+  library(magrittr)
+  library(readr)
+  library(RMariaDB)
+  library(tibble)
+})

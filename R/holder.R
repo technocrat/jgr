@@ -5,11 +5,9 @@
 # author: Richard Careaga
 # Date: 2021-04-13
 
-suppressPackageStartupMessages({
-  library(here)
-})
+source(here::here("R/libr.R"))
 
-pfl <- readRDS("pfl_data.rds")
+pfl <- readRDS("/data/pfl_data.Rds")
 part1 <- pfl[[1]][1][1][[1]]
 part12 <- pfl[[1]][12][1][[1]]
 
@@ -29,7 +27,7 @@ part12
 # make an empty dataframe with colnames() <- id,v1:v24
 
 holder <- data.frame(
-  id = as.integer(),
+  grp = as.integer(),
   v1 = as.numeric(),
   v2 = as.numeric(),
   v3 = as.numeric(),
@@ -57,9 +55,3 @@ holder <- data.frame(
 )
 
 # saveRDS(holder, file = here("obj/holder.Rds"))
-readRDS(here("obj/holder.Rds"))
-
-# next: iterate over pfl; extend length to 24, if needed for rbind
-# and add an initial column id to identify each
-# then iterate over pfl to bring each tibble up into the holder 
-# object

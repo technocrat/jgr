@@ -7,12 +7,16 @@
 
 source(here::here("R/libr.R"))
 
-pfl <- readRDS("/data/pfl_data.Rds")
+pfl <- readRDS("data/pfl_data.Rds")
 part1 <- pfl[[1]][1][1][[1]]
 part12 <- pfl[[1]][12][1][[1]]
 
 part1
 part12
+
+write_tsv(part1, file = here("obj/part1.tsv"))
+write_tsv(part12, file = here("obj/part12.tsv"))
+
 
 # 12 tibbles have from 4 to 27 variables, all doubles, and each 1001 rows
 # prepend a new variable, id, type integer, incrementing every

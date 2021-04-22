@@ -1,0 +1,11 @@
+for i in * ; do
+	sed -i s/^/$i","/ $i;
+	sed -i '1,3d' $i;
+	sed -i 's/\t/,/g' $i;
+	sed -i 's/ //g' $i;
+	sed -i 's/.pfl//g' $i;
+	sed -i '1i\id,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v17,v18,v19,v20,v21,v22,v23,v24,v25,v26,v27,v28,v39,v30' $i |
+        tee jgr;
+        mysqlimport --fields-terminated-by=, --verbose --local -u studio -pstudio r jgr
+done
+

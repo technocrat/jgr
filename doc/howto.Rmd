@@ -1,0 +1,79 @@
+---
+title: "Using SQL as Static Data Store with R"
+author: "Richard Careaga"
+date: "2020-04-22"
+output: html_document
+---
+
+<style type="text/css">
+  body{
+  font-size: 18pt;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Definition of the problem
+
+## Purpose
+
+Manufacturing data from observations is often time-consuming and exacting. When the process of collating and validating is complete, the data deserve curation.
+
+This means, above all, preserving it, by backing it up appropriately, but also protecting it from inadvertant corruption. Corruption is a danger whenever the data becomes entangled with programming logic in the same file or edited in place. Manipulating data in a spreadsheet combines both hazards. More generally, any interaction, by hand or programmatically, that modifies the data inplace risks corruption. Of course, corruption is not easily detectable.
+
+This exercise is to show one way of keeping source data safe while making it conveniently accessible. 
+
+## The source data
+
+The source data in this exercise is a series of `flat files`, an old term for somewhat old-fashioned structured plaintext files. Each consisted of 1K rows and a variable number of tab separated columns, except for the first four lines that contained metadata.
+
+## The immediate objective
+
+The data owner wanted to analyze the data in pairs of the files across pairs of variables. 
+
+## The initial problemn
+
+All of the data was brought into an R data frame with rows containing nested data frames (`tibbles`). Iterating through the data frame began to exhaust the available volatile memory before all comparisons could be made.
+
+## Alternatives considered
+
+* Run on a host with adequate memory
+* Profiling
+* More frequent garbage collection
+* Shuffling objects in and out of memory
+* The approach described here
+
+## Rationale
+
+The source data is not formatted in a way that it can be used as a data frame, and the conversion to a data frame yielded an unwieldy object that contained far more than was needed for the purpose, violating the principle of parsimony. Leaving the original intact, its contents could be imported into a relational database manager and the pairs of files and variables could be extracted from the database on an as-needed basis for processing for the immediate objective and as-yet unspecified applications.
+
+The advantages
+
+* Leaves source data in its archival condition
+* Can be placed in a form, the structured query language (SQL) database programmatically in a way that can be backed transformed programmatically to verify intactness
+* The data in an SQL database, although exposed to purposeful or accidental manipulation can be recreated from the source data.
+* If the SQL database is considered auxilliary to an R workflow, users are less likely than more to consider write operations
+* The extraction for the motivating purpose involves simple SQL syntax with a negligible learning curve
+
+# Implementation
+
+## SQL host
+
+The example uses the [MariaDB](https://mariadb.org/), an open-source platform derivative of the MySQL relational database manager. It is a mature, well supported program with deep community support and online resources. It's available for most operating systems.
+
+## Configuration
+
+After downloading, the program can be run as a daemon in background or started and stopped on a per session basis. For host machines of 8GB RAM (the minimum recommended), on demand operation is indicated. From the terminal command line interface (CLI) in Linux
+
+<code>
+$ systemctl start mariadb
+$ systemctl stop mariadb
+</code>
+
+See [here for macOS](https://wpbeaches.com/restart-start-stop-mysql-server-from-command-line-macos-linux/)
+
+### Access rights
+
+Follow the documentation to create a `root` user. This is distinct from the operating system root&mdash;it has unrestricted read-write permissions within the database environment but not otherwise. 

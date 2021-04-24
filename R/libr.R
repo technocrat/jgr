@@ -1,6 +1,5 @@
 suppressPackageStartupMessages({
   library(DBI)
-  library(dbplyr)
   library(dplyr)
   library(here)
   library(glue)

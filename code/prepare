@@ -1,0 +1,3 @@
+# change path to fit
+mkdir tmp; cp /home/roc/projects/TISCViewR/sample_data/foreland_basin/*.pfl ../tmp 
+

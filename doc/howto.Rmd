@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Manufacturing data from observations is often time-consuming and exacting. When the process of collating and validating is complete, the data deserve curation.
 
-This means, above all, preserving it, by backing it up appropriately, but also protecting it from inadvertant corruption. Corruption is a danger whenever the data becomes entangled with programming logic in the same file or edited in place. Manipulating data in a spreadsheet combines both hazards. More generally, any interaction, by hand or programmatically, that modifies the data inplace risks corruption. Of course, corruption is not easily detectable.
+This means, above all, preserving it, by backing it up appropriately, but also protecting it from inadvertent corruption. Corruption is a danger whenever the data becomes entangled with programming logic in the same file or edited in place. Manipulating data in a spreadsheet combines both hazards. More generally, any interaction, by hand or programmatically, that modifies the data inplace risks corruption. Of course, corruption is not easily detectable.
 
 This exercise is to show one way of keeping source data safe while making it conveniently accessible. 
 
@@ -54,7 +54,7 @@ The advantages
 * Leaves source data in its archival condition
 * Can be placed in a form, the structured query language (SQL) database programmatically in a way that can be backed transformed programmatically to verify intactness
 * The data in an SQL database, although exposed to purposeful or accidental manipulation can be recreated from the source data.
-* If the SQL database is considered auxilliary to an R workflow, users are less likely than more to consider write operations
+* If the SQL database is considered auxiliary to an R workflow, users are less likely than more to consider write operations
 * The extraction for the motivating purpose involves simple SQL syntax with a negligible learning curve
 
 # Implementation
@@ -65,15 +65,269 @@ The example uses the [MariaDB](https://mariadb.org/), an open-source platform de
 
 ## Configuration
 
-After downloading, the program can be run as a daemon in background or started and stopped on a per session basis. For host machines of 8GB RAM (the minimum recommended), on demand operation is indicated. From the terminal command line interface (CLI) in Linux
+After downloading, the program can be run as a daemon in background or started and stopped on a per session basis. For host machines of 8GB RAM (the minimum recommended), on demand operation is indicated. From the terminal command line interface ($) in Linux
 
-<code>
-$ systemctl start mariadb
-$ systemctl stop mariadb
-</code>
+    $ systemctl start mariadb
+
+    $ systemctl stop mariadb
 
 See [here for macOS](https://wpbeaches.com/restart-start-stop-mysql-server-from-command-line-macos-linux/)
 
-### Access rights
+### Access right control
 
-Follow the documentation to create a `root` user. This is distinct from the operating system root&mdash;it has unrestricted read-write permissions within the database environment but not otherwise. 
+Follow the documentation to create a `root` user. This is distinct from the operating system root&mdash;it has unrestricted read-write permissions within the database environment but not otherwise. It will be used to grant permissions to create and read tables.
+
+### Security posture
+
+In addition to access rights, operating system measures can be taken to restrict access to the database. These include the system user under which runs and other measures. They should be consistent with the measures under which the host machine operates. The degree is a tradeoff between convenience of operation and the inconvenience of potentially having to recreate the database from the source data.
+
+### Program operation
+
+Both command line interface and graphical user interface (from third parties) access is available. For the types of uses described here the command line interface is simpler.
+
+The database program, once started as described above, it is invoked from the terminal with
+
+    $ mysql -u root -ppassword
+    
+where "password" is the root user password set for the application (not the system root password). Note that there is no space between the `-p` flag and the password, unusually.
+
+The application prompt will appear as
+
+    MariaDB [(none)]> 
+    
+The `[(none)]` indicates that no database has been selected.
+
+### Terminology
+
+A database is a collection of tables. A table contains records and records contain fields. A table corresponds to a data frame in R. Its records correspond to rows and its fields correspond to columns (variables) of data frames.
+
+### Database creation, table creation and user setup
+
+A one-time process is needed to create a database for the project and a table to hold the transferred data. From the application prompt, paste from the `setup.txt` file in the repo `code` directory
+
+    MariaDB [(none)]> CREATE DATABASE r;
+    MariaDB [(none)]> CREATE TABLE jgr (
+    recid INT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(6),
+    v1 FLOAT,
+    v2 FLOAT,
+    v3 FLOAT,
+    v4 FLOAT,
+    v5 FLOAT,
+    v6 FLOAT,
+    v7 FLOAT,
+    v8 FLOAT,
+    v9 FLOAT,
+    v10 FLOAT,
+    v11 FLOAT,
+    v12 FLOAT,
+    v13 FLOAT,
+    v14 FLOAT,
+    v15 FLOAT,
+    v16 FLOAT,
+    v17 FLOAT,
+    v18 FLOAT,
+    v19 FLOAT,
+    v20 FLOAT,
+    v21 FLOAT,
+    v22 FLOAT,
+    v23 FLOAT,
+    v24 FLOAT,
+    v25 FLOAT,
+    v26 FLOAT,
+    v27 FLOAT,
+    v28 FLOAT,
+    v29 FLOAT,
+    v30 FLOAT)
+    ;
+    MariaDB [(none)]> CREATE USER 'studio'@'localhost' IDENTIFIED BY 'studio';
+    MariaDB [(none)]> GRANT ALL PRIVILEGES ON r.jgr TO 'studio'@'localhost';
+    MariaDB [(none)]> quit;
+    $
+    
+Capitalization of MariaDB keywords is a convention, but keywords are not case sensitive. Table names, however, are case sensitive.
+
+MariaDB statements are terminated by a semicolon, `;`.
+
+Once the database is setup it may require no further use of the application interface. Should further work be required (for example, to recreate the table), the process is slightly different
+
+    $ mysql -u studio -pstudio -pstudio
+    MariaDB [(none)]> use r;
+    MariaDB [(r)]> drop table jgr;
+    MariaDB [(r)]> CREATE TABLE jgr (
+    recid INT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(6),
+    v1 FLOAT,
+    v2 FLOAT,
+    v3 FLOAT,
+    v4 FLOAT,
+    v5 FLOAT,
+    v6 FLOAT,
+    v7 FLOAT,
+    v8 FLOAT,
+    v9 FLOAT,
+    v10 FLOAT,
+    v11 FLOAT,
+    v12 FLOAT,
+    v13 FLOAT,
+    v14 FLOAT,
+    v15 FLOAT,
+    v16 FLOAT,
+    v17 FLOAT,
+    v18 FLOAT,
+    v19 FLOAT,
+    v20 FLOAT,
+    v21 FLOAT,
+    v22 FLOAT,
+    v23 FLOAT,
+    v24 FLOAT,
+    v25 FLOAT,
+    v26 FLOAT,
+    v27 FLOAT,
+    v28 FLOAT,
+    v29 FLOAT,
+    v30 FLOAT)
+    ;
+    MariaDB [(r)]> quit;
+    $
+    
+The reason why it may be necessary to recreate the table is, for example, a script adding to it was run twice. Although the excess records can be removed within MariaDB, recreating the table is simpler. The commands to be pasted are in the `recreate.txt` file in this repo under the `code` directory. 
+
+The first characters are fields and the following characters are data types. `INT` corresponds to  `integer`, `VARCHAR` corresponds to `character` and `FLOAT` corresponds to `numeric` in `R`.
+
+The `recid` field insures that each record is unique. The `id` field identifies the source file from which the record was taken. The fields `v1` through `v30` correspond to the positions of variables in the source data. The `v` preface indicates "variable." This is in contrast to the default convention in `R` of `V1`, etc. The purpose is ease of entering `R` code. At the time of report preparation, the headers corresponding to variables can be renamed.
+    
+## Replicating data into the database
+
+A utility program imports data into the database table.
+
+    mysqlimport --fields-terminated-by=, --verbose --local -u studio -pstudio r jgr;
+    
+The `fields-terminated-by` flag is set to comma, `,`, uses the same credentials as above and the arguments identify the database, `r` and the table `jgr`, which must also be the name of the file being imported. The use of `,` is consistent with the comma-separated-value (csv) plain-text format delimiter for fields, which is the most common format.
+
+## Data conversion
+
+For this source data, modification is required. It is assumed that the source files have identical layouts. 
+
+### Temporary copies of the source data
+
+To begin, the source data files are copied into a `tmp` directory from the terminal
+
+    $ mkdir tmp; cp /home/USER/projects/DIRECTORY1/DIRECTORY2/*.EXT tmp
+    
+where the capitalized portions indicate the appropriate pathname. This command is contained in a script, `prepare` in the `code` directory. The purpose of using temporary copies is to leave the original intact and to remove the copies after use to prevent a proliferation of data versions (even though they may be identical). Should it be necessary to rerun the following scripts first
+
+    $ rm -rf tmp
+    
+to remove the `tmp` directory and its (temporary) copies of the source files.
+
+### Changes required
+
+The source data is in several files, corresponding to attributes of interest, is encoded by the filename. The filename must be captured and inserted into the `id` field of the table.
+
+The first three fields of each file is metadata. Although the source data files do not contain a header line, if it were present it would need to be removed in like manner. The variable names in the file are mapped by position to the fields in the table. The file names to be imported as the `id` field are identical, and should be removed as unnecessary. The source files are tab delimited and will be changed to comma delimited. To check for such lines
+
+    $ head 10 filename
+
+### Script
+
+A shell script to iterate over the files will make those changes from the tmp directory. It is included in the repo in the `code` directory as `prepare`.
+
+    $ cd tmp
+    $ ../process
+    
+The script is executed from a subdirectory to avoid having it process itself.
+
+The script is composed with a `for` loop enclosing statements. The semicolon `;` separates.
+
+    for i in * ; do
+    	sed -i s/^/","$i","/ $i;
+    	sed -i '1,3d' $i;
+    	sed -i 's/\t/,/g' $i; 
+    	sed -i 's/ //g' $i;   
+    	sed -i 's/.TXT//g' $i;
+      cp $i jgr;
+      mysqlimport --fields-terminated-by=, --verbose --local -u studio -pstudio r jgr;
+    done
+
+The `i` in the `for` statement is the index that refers successively to the wildcard character `*` contents of the directory from which the command was invoked. The keywords `do` and `done` indicate the beginning and end of the loop.
+
+The changes to each file, indicated by `$i` in each iteration, are performed by `sed`, a standard utility in Unix derivatives. The `sed` program is a stream editor designed for programmatic file changes. Two `sed` commands are used&mdash;search-and-replace, indicated by the `s/something/else` pattern and delete, indicated by the `#,#d` pattern. The caret symbol, `^` indicates the beginning of each line and the `g` indicates that changes are to be made everywhere on each line. Otherwise the change only affects the first match on a line. `TXT` is the file name extension of the source data files.
+
+The `-i` flag to `sed` indicates that modification are to be made on the copies of the source files in the `tmp` directory, each in its turn depending on `$i`.
+
+Following the `sed` statements is a `cp` station to copy the files successively indicated by `$i` to a file to be named `jgr`, which corresponds to the name of the database table. The `jgr` file is overwritten successively with the current `$i` as modified by the `sed` statements. The final statement inserts the `jgr` file into the `jgr` table. While unprocessed files remain, the loop returns to the top `sed` statement.
+
+To use the script most conveniently, the following command will be it envokable without having to call it with another program
+
+    $ chmod +x process
+    
+### Conversion verification
+
+Before removing the `tmp` directory examine the file sizes
+
+    $ rm jgr
+    $ wc *
+  
+Make a note of the second column in the last line of the output; it represents the total number of records that have been inserted into the `r` database `jgr` table. Then open MariaDB
+
+    $ mysql -u studio -pstudio -pstudio
+    MariaDB [(none)]> use r;
+    MariaDB [(r)]> SELECT recid FROM jgr;
+    
+If the last line of output matches the last line of the `wc` command in the shell; the same total number of lines in the copies of the source files are present in the `jgr` table.
+
+If the numbers match, it is likely that the import process has successfully run for all records. To inspect the first few lines of the `jgr` table for more information
+
+    $ MariaDB [(r)] SELECT * FROM jgr LIMIT 5;
+    
+## Use of the database
+
+From `R`, the database can be drawn upon for any combination of source files and their variables. It is not necessary to export content from the `jgr` table in the `r` database into an intermediate `csv` file to be read in by `R`. 
+
+### Required packages
+
+`DBI` and `RMariaDB` are required. For the example below, the `ggplot2` package is also required.
+
+### Sample script
+
+This script, `demo` is contained in the `R` folder.
+
+    library(DBI)
+    library(ggplot2)
+    library(RMariaDB)
+    
+    con <- dbConnect(RMariaDB::MariaDB(), 
+                 username="studio", 
+                 password="studio", 
+                 dbname ="r")
+
+    dbListTables(con)
+    dbListFields(con, "jgr")
+    
+    x <- dbGetQuery(con, "SELECT v4 FROM jgr WHERE id = 'NS_000'")
+    y <- dbGetQuery(con, "SELECT v6 FROM jgr WHERE id = 'NS_022'")
+    
+    dbDisconnect(con)
+
+    dat <- cbind(x,y)
+    fit <- lm(v6 ~ v4, data = dat)
+    summary(fit)
+
+    p <- ggplot(dat,aes(v6,v4))
+    p + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      theme_minimal()
+
+The notable feature is that only two variables from two source files are required and only those are brought into R, at the minimum possible memory cost.
+
+The arguments to the `dbGetQuery` functions are the `con`, connection object, and a SQL query language statement. The number of SQL statements and keywords is large and combinable for many database operations and queries. However, a very simple syntax is required for this purpose. The `v4` and `v6` fields identify the variables of interest and the `id` fields the source files of interest. This is as simple or simpler as equivalent statements in `R`.
+
+## Conclusion
+
+The `demo` script can be turned into a function taking as its arguments `id` and `v` pairs. With `Map` or another iterator, any length of such arguments can be passed, seriatim to be passed to a list, which can be as large as the available memory allows, without the overhead of bringing the entire dataset into memory.
+
+    
+
+    
